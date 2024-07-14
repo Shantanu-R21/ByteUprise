@@ -1,0 +1,125 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+public class TaskManager {
+    private JFrame frame;
+    private JTextField titleField, descriptionField, dueDateField;
+    private JButton addButton, editButton, deleteButton;
+    private JList<String> taskList;
+    private DefaultListModel<String> listModel;
+    private ArrayList<Task> tasks;
+
+    public TaskManager() {
+        frame = new JFrame("Task Manager");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new GridLayout(3, 2));
+        inputPanel.add(new JLabel("Title:"));
+        titleField = new JTextField();
+        inputPanel.add(titleField);
+        inputPanel.add(new JLabel("Description:"));
+        descriptionField = new JTextField();
+        inputPanel.add(descriptionField);
+        inputPanel.add(new JLabel("Due Date:"));
+        dueDateField = new JTextField();
+        inputPanel.add(dueDateField);
+
+        addButton = new JButton("Add Task");
+        addButton.addActionListener(new AddTaskListener());
+        inputPanel.add(addButton);
+
+        editButton = new JButton("Edit Task");
+        editButton.addActionListener(new EditTaskListener());
+        inputPanel.add(editButton);
+        deleteButton = new JButton("Delete Task");
+        deleteButton.addActionListener(new DeleteTaskListener());
+        inputPanel.add(deleteButton);
+        taskList = new JList<String>();
+        listModel = new DefaultListModel<String>();
+        taskList.setModel(listModel);
+
+        frame.add(inputPanel, BorderLayout.NORTH);
+        frame.add(new JScrollPane(taskList), BorderLayout.CENTER);
+        tasks = new ArrayList<Task>();
+        frame.pack();
+        frame.setVisible(true);
+    }
+    private class AddTaskListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String title = titleField.getText();
+            String description = descriptionField.getText();
+            String dueDate = dueDateField.getText();
+            Task task = new Task(title, description, dueDate);
+            tasks.add(task);
+            listModel.addElement(task.getTitle());
+            titleField.setText("");
+            descriptionField.setText("");
+            dueDateField.setText("");
+        }
+    }
+    private class EditTaskListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            int selectedIndex = taskList.getSelectedIndex();
+            if (selectedIndex == -1) return;
+            Task task = tasks.get(selectedIndex);
+            String newTitle = JOptionPane.showInputDialog(frame, "Enter new title:", task.getTitle());
+            String newDescription = JOptionPane.showInputDialog(frame, "Enter new description:", task.getDescription());
+            String newDueDate = JOptionPane.showInputDialog(frame, "Enter new due date:", task.getDueDate());
+            task.setTitle(newTitle);
+            task.setDescription(newDescription);
+            task.setDueDate(newDueDate);
+            listModel.set(selectedIndex, task.getTitle());
+        }
+    }
+    private class DeleteTaskListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            int selectedIndex = taskList.getSelectedIndex();
+            if (selectedIndex == -1) return;
+
+            tasks.remove(selectedIndex);
+            listModel.remove(selectedIndex);
+        }
+    }
+
+    private class Task {
+        private String title;
+        private String description;
+        private String dueDate;
+
+        public Task(String title, String description, String dueDate) {
+            this.title = title;
+            this.description = description;
+            this.dueDate = dueDate;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getDueDate() {
+            return dueDate;
+        }
+
+        public void setDueDate(String dueDate) {
+            this.dueDate = dueDate;
+        }
+    }
+    public static void main(String[] args) {
+        new TaskManager();
+    }
+}
