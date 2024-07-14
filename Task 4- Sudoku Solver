@@ -1,0 +1,143 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class SudokuSolverGUI {
+
+    private JTextField[][] inputFields;
+    private JTextField[][] outputFields;
+    private JButton solveButton;
+
+    public SudokuSolverGUI() {
+        JFrame frame = new JFrame("Sudoku Solver");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        JPanel inputPanel = new JPanel(new GridLayout(9, 9));
+        inputFields = new JTextField[9][9];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                JTextField field = new JTextField(2);
+                field.setHorizontalAlignment(JTextField.CENTER);
+                inputFields[i][j] = field;
+                inputPanel.add(field);
+            }
+        }
+
+        JPanel outputPanel = new JPanel(new GridLayout(9, 9));
+        outputFields = new JTextField[9][9];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                JTextField field = new JTextField(2);
+                field.setHorizontalAlignment(JTextField.CENTER);
+                field.setEditable(false);
+                outputFields[i][j] = field;
+                outputPanel.add(field);
+            }
+        }
+
+        solveButton = new JButton("Solve");
+        solveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int[][] board = new int[9][9];
+                for (int i = 0; i < 9; i++) {
+                    for (int j = 0; j < 9; j++) {
+                        try {
+                            board[i][j] = Integer.parseInt(inputFields[i][j].getText());
+                        } catch (NumberFormatException ex) {
+                            board[i][j] = 0;
+                        }
+                    }
+                }
+
+                SudokuSolver solver = new SudokuSolver(board);
+                if (solver.solve()) {
+                    for (int i = 0; i < 9; i++) {
+                        for (int j = 0; j < 9; j++) {
+                            outputFields[i][j].setText(String.valueOf(board[i][j]));
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(frame, "No solution exists");
+                }
+            }
+        });
+
+        frame.add(inputPanel, BorderLayout.WEST);
+        frame.add(outputPanel, BorderLayout.EAST);
+        frame.add(solveButton, BorderLayout.SOUTH);
+
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    private class SudokuSolver {
+
+        private int[][] board;
+
+        public SudokuSolver(int[][] board) {
+            this.board = board;
+        }
+
+        public boolean solve() {
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    if (board[i][j] == 0) {
+                        for (int num = 1; num <= 9; num++) {
+                            if (isValid(i, j, num)) {
+                                board[i][j] = num;
+                                if (solve()) {
+                                    return true;
+                                } else {
+                                    board[i][j] = 0;
+                                }
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private boolean isValid(int row, int col, int num) {
+            // Check the row
+            for (int i = 0; i < 9; i++) {
+                if (board[row][i] == num) {
+                    return false;
+                }
+            }
+
+            // Check the column
+            for (int i = 0; i < 9; i++) {
+                if (board[i][col] == num) {
+                    return false;
+                }
+            }
+
+            // Check the box
+            int boxRow = row - row % 3;
+            int boxCol = col - col % 3;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (board[boxRow + i][boxCol + j] == num) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new SudokuSolverGUI();
+            }
+        });
+    }
+}
